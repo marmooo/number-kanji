@@ -304,7 +304,6 @@ function addNumber(x, y, r, i) {
   const text = document.createElementNS(svgNamespace, "text");
   text.setAttribute("x", x);
   text.setAttribute("y", y);
-  text.setAttribute("r", r);
   text.setAttribute("text-anchor", "middle");
   text.setAttribute("font-size", r);
   text.setAttribute("fill", "currentColor");
@@ -562,7 +561,7 @@ function getFontSize(svg) {
   }
 }
 
-function setViewBox(svg, fontSize) {
+function setViewBox(svg) {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -764,7 +763,7 @@ async function nextProblem() {
   hideIcon(svg);
   fontSize = getFontSize(svg);
   currPathData = addNumbers(fontSize);
-  setViewBox(svg, fontSize);
+  setViewBox(svg);
 
   svg.style.width = "100%";
   svg.style.height = "100%";
