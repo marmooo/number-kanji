@@ -556,7 +556,6 @@ function getFontSize(svg) {
     return width / 40;
   } else {
     const width = lengthToPixel(svg.getAttribute("width"));
-    console.log(svg.getAttribute("width"), width);
     return width / 40;
   }
 }
