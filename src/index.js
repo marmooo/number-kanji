@@ -354,58 +354,88 @@ function addNumber(x, y, r, i) {
   return text;
 }
 
-function replaceNumber(numbers, rect, r) {
-  let ny = rect.top;
-  while (isOverlapped(numbers, rect)) {
-    rect.top += r;
-    rect.bottom += r;
-    ny += r;
+function getAccessList(n) {
+  const list = new Array(n * 2 + 1);
+  for (let x = -n; x <= n; x++) {
+    for (let y = -n; y <= n; y++) {
+      const distance = Math.abs(x) + Math.abs(y);
+      if (list[distance]) {
+        list[distance].push([x, y]);
+      } else {
+        list[distance] = [[x, y]];
+      }
+    }
   }
-  return ny;
+  return list;
+}
+
+function replaceNumber(numbers, rect, width, fontSize) {
+  const newRect = structuredClone(rect);
+  for (const positions of accessList) {
+    for (const [x, y] of positions) {
+      const dx = width * x;
+      const dy = fontSize * y;
+      newRect.left = rect.left + dx;
+      newRect.right = rect.right + dx;
+      newRect.top = rect.top + dy;
+      newRect.bottom = rect.bottom + dy;
+      if (!isOverlapped(numbers, newRect)) return newRect;
+    }
+  }
+  return newRect;
 }
 
 function addNumbers(r) {
   let index = clickIndex + 1;
-  const numbers = [];
+  numbers = [];
   const path = paths[pathIndex];
   const pathData = svgpath(path.getAttribute("d"));
+  const margin = 1;
   let x = 0;
   let y = 0;
   for (const segment of pathData.segments) {
     switch (segment[0]) {
       case "H": {
         x = segment[1];
-        const rect = { left: x, top: y, right: x + r, bottom: y + r };
-        const ny = replaceNumber(numbers, rect, r);
-        numbers.push(rect);
-        addNumber(x, ny, r, index);
+        const w = (index.toString().length / 2 + margin) * r;
+        const w2 = w / 2;
+        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+        const newRect = replaceNumber(numbers, rect, w, r);
+        numbers.push(newRect);
+        addNumber(newRect.left + w2, newRect.top + r, r, index);
         index += 1;
         break;
       }
       case "h": {
         x += segment[1];
-        const rect = { left: x, top: y, right: x + r, bottom: y + r };
-        const ny = replaceNumber(numbers, rect, r);
-        numbers.push(rect);
-        addNumber(x, ny, r, index);
+        const w = (index.toString().length / 2 + margin) * r;
+        const w2 = w / 2;
+        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+        const newRect = replaceNumber(numbers, rect, w, r);
+        numbers.push(newRect);
+        addNumber(newRect.left + w2, newRect.top + r, r, index);
         index += 1;
         break;
       }
       case "V": {
         y = segment[1];
-        const rect = { left: x, top: y, right: x + r, bottom: y + r };
-        const ny = replaceNumber(numbers, rect, r);
-        numbers.push(rect);
-        addNumber(x, ny, r, index);
+        const w = (index.toString().length / 2 + margin) * r;
+        const w2 = w / 2;
+        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+        const newRect = replaceNumber(numbers, rect, w, r);
+        numbers.push(newRect);
+        addNumber(newRect.left + w2, newRect.top + r, r, index);
         index += 1;
         break;
       }
       case "v": {
         y += segment[1];
-        const rect = { left: x, top: y, right: x + r, bottom: y + r };
-        const ny = replaceNumber(numbers, rect, r);
-        numbers.push(rect);
-        addNumber(x, ny, r, index);
+        const w = (index.toString().length / 2 + margin) * r;
+        const w2 = w / 2;
+        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+        const newRect = replaceNumber(numbers, rect, w, r);
+        numbers.push(newRect);
+        addNumber(newRect.left + w2, newRect.top + r, r, index);
         index += 1;
         break;
       }
@@ -418,10 +448,12 @@ function addNumbers(r) {
       case "A": {
         x = segment.at(-2);
         y = segment.at(-1);
-        const rect = { left: x, top: y, right: x + r, bottom: y + r };
-        const ny = replaceNumber(numbers, rect, r);
-        numbers.push(rect);
-        addNumber(x, ny, r, index);
+        const w = (index.toString().length / 2 + margin) * r;
+        const w2 = w / 2;
+        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+        const newRect = replaceNumber(numbers, rect, w, r);
+        numbers.push(newRect);
+        addNumber(newRect.left + w2, newRect.top + r, r, index);
         index += 1;
         break;
       }
@@ -434,10 +466,12 @@ function addNumbers(r) {
       case "a": {
         x += segment.at(-2);
         y += segment.at(-1);
-        const rect = { left: x, top: y, right: x + r, bottom: y + r };
-        const ny = replaceNumber(numbers, rect, r);
-        numbers.push(rect);
-        addNumber(x, ny, r, index);
+        const w = (index.toString().length / 2 + margin) * r;
+        const w2 = w / 2;
+        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+        const newRect = replaceNumber(numbers, rect, w, r);
+        numbers.push(newRect);
+        addNumber(newRect.left + w2, newRect.top + r, r, index);
         index += 1;
         break;
       }
@@ -529,22 +563,22 @@ function getFontSize(svg) {
 }
 
 function setViewBox(svg, fontSize) {
-  const margin = fontSize * 2;
-  const viewBox = svg.getAttribute("viewBox");
-  if (viewBox) {
-    const rect = viewBox.split(" ").map(Number);
-    const left = rect[0] - margin;
-    const top = rect[1] - margin;
-    const width = rect[2] + margin * 2;
-    const height = rect[3] + margin * 2;
-    svg.setAttribute("viewBox", `${left} ${top} ${width} ${height}`);
-  } else {
-    const left = -margin;
-    const top = -margin;
-    const width = lengthToPixel(svg.getAttribute("width")) + margin * 2;
-    const height = lengthToPixel(svg.getAttribute("height")) + margin * 2;
-    svg.setAttribute("viewBox", `${left} ${top} ${width} ${height}`);
-  }
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  numbers.forEach((rect) => {
+    const { left, top, right, bottom } = rect;
+    if (left < minX) minX = left;
+    if (top < minY) minY = top;
+    if (maxX < right) maxX = right;
+    if (maxY < bottom) maxY = bottom;
+  });
+  minX = Math.floor(minX);
+  minY = Math.floor(minY);
+  maxX = Math.ceil(maxX);
+  maxY = Math.ceil(maxY);
+  svg.setAttribute("viewBox", `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
 }
 
 function hideIcon() {
@@ -729,8 +763,8 @@ async function nextProblem() {
   paths = [...svg.getElementsByTagName("path")];
   hideIcon(svg);
   fontSize = getFontSize(svg);
-  setViewBox(svg, fontSize);
   currPathData = addNumbers(fontSize);
+  setViewBox(svg, fontSize);
 
   svg.style.width = "100%";
   svg.style.height = "100%";
@@ -763,6 +797,8 @@ function selectAttribution(index) {
 
 const svgNamespace = "http://www.w3.org/2000/svg";
 const xlinkNamespace = "http://www.w3.org/1999/xlink";
+const accessList = getAccessList(5);
+let numbers = [];
 let clickIndex = 0;
 let segmentIndex = 1;
 let pathIndex = 0;
