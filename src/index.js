@@ -300,13 +300,13 @@ function isOverlapped(target, rect) {
   );
 }
 
-function addNumber(x, y, r, i) {
+function addNumber(x, y, r, i, pathIndex, display) {
   const text = document.createElementNS(svgNamespace, "text");
   text.setAttribute("x", x);
   text.setAttribute("y", y);
   text.setAttribute("text-anchor", "middle");
   text.setAttribute("font-size", r);
-  text.setAttribute("fill", "currentColor");
+  text.style.display = display;
   text.style.cursor = "pointer";
   text.textContent = i;
   text.onclick = () => {
@@ -315,34 +315,35 @@ function addNumber(x, y, r, i) {
       return;
     }
     clickIndex += 1;
-    const currPath = paths[pathIndex];
+    const currPath = problem[pathIndex].path;
     if (segmentIndex != 1) currPath.nextElementSibling.remove();
     text.style.cursor = "initial";
     text.setAttribute("fill-opacity", 0.5);
     text.onclick = null;
 
-    const path = createPath(paths[pathIndex]);
+    const path = createPath(problem[pathIndex].path);
     resetCurrentColor(path);
     path.style.fill = "";
     path.style.stroke = "";
-    const pathData = svgpath.from(currPathData);
+    const pathData = svgpath.from(problem[pathIndex].pathData);
     pathData.segments = pathData.segments.slice(0, segmentIndex);
     const d = pathData.toString();
     path.setAttribute("d", d);
     currPath.after(path);
 
-    if (segmentIndex == currPathData.segments.length) {
-      const texts = [...svg.getElementsByTagName("text")];
-      for (const text of texts) {
-        text.remove();
-      }
-      if (pathIndex + 1 == paths.length) {
+    if (segmentIndex == problem[pathIndex].pathData.segments.length) {
+      problem[pathIndex].texts.forEach((prevText) => {
+        prevText.remove();
+      });
+      if (pathIndex + 1 == problem.length) {
         playAudio("correctAll");
       } else {
         playAudio("correct2");
-        pathIndex += 1;
-        currPathData = addNumbers(fontSize);
+        currPathIndex += 1;
         segmentIndex = 1;
+        problem[currPathIndex].texts.forEach((currText) => {
+          currText.style.display = "initial";
+        });
       }
     } else {
       playAudio("correct1");
@@ -384,105 +385,91 @@ function replaceNumber(numbers, rect, width, fontSize) {
   return newRect;
 }
 
-function addNumbers(r) {
-  let index = clickIndex + 1;
-  numbers = [];
-  const path = paths[pathIndex];
-  const pathData = svgpath(path.getAttribute("d"));
+function getSegmentRects(pathData, index, r) {
+  const rects = [];
   const margin = 1;
+
+  function getRect(x, y, r) {
+    const w = (index.toString().length / 2 + margin) * r;
+    const w2 = w / 2;
+    const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+    const newRect = replaceNumber(rects, rect, w, r);
+    return newRect;
+  }
+
   let x = 0;
   let y = 0;
-  for (const segment of pathData.segments) {
+  pathData.segments.forEach((segment) => {
     switch (segment[0]) {
-      case "H": {
+      case "H":
         x = segment[1];
-        const w = (index.toString().length / 2 + margin) * r;
-        const w2 = w / 2;
-        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
-        const newRect = replaceNumber(numbers, rect, w, r);
-        numbers.push(newRect);
-        addNumber(newRect.left + w2, newRect.top + r, r, index);
-        index += 1;
+        rects.push(getRect(x, y, r));
         break;
-      }
-      case "h": {
+      case "h":
         x += segment[1];
-        const w = (index.toString().length / 2 + margin) * r;
-        const w2 = w / 2;
-        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
-        const newRect = replaceNumber(numbers, rect, w, r);
-        numbers.push(newRect);
-        addNumber(newRect.left + w2, newRect.top + r, r, index);
-        index += 1;
+        rects.push(getRect(x, y, r));
         break;
-      }
-      case "V": {
+      case "V":
         y = segment[1];
-        const w = (index.toString().length / 2 + margin) * r;
-        const w2 = w / 2;
-        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
-        const newRect = replaceNumber(numbers, rect, w, r);
-        numbers.push(newRect);
-        addNumber(newRect.left + w2, newRect.top + r, r, index);
-        index += 1;
+        rects.push(getRect(x, y, r));
         break;
-      }
-      case "v": {
+      case "v":
         y += segment[1];
-        const w = (index.toString().length / 2 + margin) * r;
-        const w2 = w / 2;
-        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
-        const newRect = replaceNumber(numbers, rect, w, r);
-        numbers.push(newRect);
-        addNumber(newRect.left + w2, newRect.top + r, r, index);
-        index += 1;
+        rects.push(getRect(x, y, r));
         break;
-      }
       case "M":
       case "L":
       case "C":
       case "S":
       case "Q":
       case "T":
-      case "A": {
+      case "A":
         x = segment.at(-2);
         y = segment.at(-1);
-        const w = (index.toString().length / 2 + margin) * r;
-        const w2 = w / 2;
-        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
-        const newRect = replaceNumber(numbers, rect, w, r);
-        numbers.push(newRect);
-        addNumber(newRect.left + w2, newRect.top + r, r, index);
-        index += 1;
+        rects.push(getRect(x, y, r));
         break;
-      }
       case "m":
       case "l":
       case "c":
       case "s":
       case "q":
       case "t":
-      case "a": {
+      case "a":
         x += segment.at(-2);
         y += segment.at(-1);
-        const w = (index.toString().length / 2 + margin) * r;
-        const w2 = w / 2;
-        const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
-        const newRect = replaceNumber(numbers, rect, w, r);
-        numbers.push(newRect);
-        addNumber(newRect.left + w2, newRect.top + r, r, index);
-        index += 1;
+        rects.push(getRect(x, y, r));
         break;
-      }
       case "Z":
       case "z":
         break;
     }
-  }
-  pathData.segments = pathData.segments.filter((segment) =>
-    !segment[0].match(/[zZ]/)
-  );
-  return pathData;
+  });
+  return rects;
+}
+
+function addNumbers(r) {
+  let index = clickIndex + 1;
+  problem.forEach((data, pathIndex) => {
+    const pathData = svgpath(data.path.getAttribute("d"));
+    const rects = getSegmentRects(pathData, index, r);
+
+    const texts = [];
+    const display = (pathIndex == 0) ? "initial" : "none";
+    rects.forEach((rect) => {
+      const left = rect.left + (rect.right - rect.left) / 2;
+      const text = addNumber(left, rect.top + r, r, index, pathIndex, display);
+      texts.push(text);
+      index += 1;
+    });
+
+    pathData.segments = pathData.segments.filter((segment) =>
+      !segment[0].match(/[zZ]/)
+    );
+
+    data.rects = rects;
+    data.texts = texts;
+    data.pathData = pathData;
+  });
 }
 
 function getTransforms(node) {
@@ -565,12 +552,14 @@ function setViewBox(svg) {
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  numbers.forEach((rect) => {
-    const { left, top, right, bottom } = rect;
-    if (left < minX) minX = left;
-    if (top < minY) minY = top;
-    if (maxX < right) maxX = right;
-    if (maxY < bottom) maxY = bottom;
+  problem.forEach((data) => {
+    data.rects.forEach((rect) => {
+      const { left, top, right, bottom } = rect;
+      if (left < minX) minX = left;
+      if (top < minY) minY = top;
+      if (maxX < right) maxX = right;
+      if (maxY < bottom) maxY = bottom;
+    });
   });
   minX = Math.floor(minX);
   minY = Math.floor(minY);
@@ -580,10 +569,11 @@ function setViewBox(svg) {
 }
 
 function hideIcon() {
-  for (const path of paths) {
+  problem.forEach((data) => {
+    const path = data.path;
     path.style.fill = "none";
     path.style.stroke = "none";
-  }
+  });
 }
 
 async function fetchIconList(course) {
@@ -739,7 +729,7 @@ function styleAttributeToAttributes(svg) {
 async function nextProblem() {
   clickIndex = 0;
   segmentIndex = 1;
-  pathIndex = 0;
+  currPathIndex = 0;
   const courseNode = document.getElementById("course");
   const course = courseNode.options[courseNode.selectedIndex].value;
   if (iconList.length == 0) {
@@ -750,7 +740,6 @@ async function nextProblem() {
   const icon = await fetchIcon(url);
   svg = icon.documentElement;
 
-  fixIconCode(svg);
   styleAttributeToAttributes(svg);
   if (!svg.getAttribute("fill")) svg.setAttribute("fill", "gray");
   resetCurrentColor(svg);
@@ -758,10 +747,13 @@ async function nextProblem() {
   shape2path(svg, createPath, { circleAlgorithm: "QuadBezier" });
   removeUseTags(svg);
   removeTransforms(svg);
-  paths = [...svg.getElementsByTagName("path")];
+  problem = [];
+  [...svg.getElementsByTagName("path")].forEach((path) => {
+    problem.push({ path });
+  });
   hideIcon(svg);
   fontSize = getFontSize(svg);
-  currPathData = addNumbers(fontSize);
+  addNumbers(fontSize);
   setViewBox(svg);
 
   svg.style.width = "100%";
@@ -796,14 +788,12 @@ function selectAttribution(index) {
 const svgNamespace = "http://www.w3.org/2000/svg";
 const xlinkNamespace = "http://www.w3.org/1999/xlink";
 const accessList = getAccessList(5);
-let numbers = [];
 let clickIndex = 0;
 let segmentIndex = 1;
-let pathIndex = 0;
+let currPathIndex = 0;
 let svg;
-let paths;
+let problem;
 let fontSize;
-let currPathData;
 let iconList = [];
 
 selectRandomCourse();
