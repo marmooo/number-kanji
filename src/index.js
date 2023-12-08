@@ -547,7 +547,19 @@ function getFontSize(svg) {
   }
 }
 
+function getViewBox(svg) {
+  const viewBox = svg.getAttribute("viewBox");
+  if (viewBox) {
+    return viewBox.split(" ").map(Number);
+  } else {
+    const width = lengthToPixel(svg.getAttribute("width"));
+    const height = lengthToPixel(svg.getAttribute("height"));
+    return [0, 0, width, height];
+  }
+}
+
 function setViewBox(svg) {
+  const viewBox = getViewBox(svg);
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -565,7 +577,13 @@ function setViewBox(svg) {
   minY = Math.floor(minY);
   maxX = Math.ceil(maxX);
   maxY = Math.ceil(maxY);
-  svg.setAttribute("viewBox", `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
+  const width = maxX - minX;
+  const height = maxY - minY;
+  if (minX < viewBox[0]) viewBox[0] = minX;
+  if (minX < viewBox[1]) viewBox[1] = minY;
+  if (viewBox[2] < maxX - minY) viewBox[2] = width;
+  if (viewBox[3] < maxY - minY) viewBox[3] = height;
+  svg.setAttribute("viewBox", viewBox.join(" "));
 }
 
 function hideIcon() {
@@ -740,6 +758,7 @@ async function nextProblem() {
   const icon = await fetchIcon(url);
   svg = icon.documentElement;
 
+  fixIconCode(svg);
   styleAttributeToAttributes(svg);
   if (!svg.getAttribute("fill")) svg.setAttribute("fill", "gray");
   resetCurrentColor(svg);
