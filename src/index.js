@@ -581,8 +581,8 @@ function setViewBox(svg) {
   const height = maxY - minY;
   if (minX < viewBox[0]) viewBox[0] = minX;
   if (minX < viewBox[1]) viewBox[1] = minY;
-  if (viewBox[2] < maxX - minY) viewBox[2] = width;
-  if (viewBox[3] < maxY - minY) viewBox[3] = height;
+  if (viewBox[2] < width) viewBox[2] = width;
+  if (viewBox[3] < height) viewBox[3] = height;
   svg.setAttribute("viewBox", viewBox.join(" "));
 }
 
