@@ -293,10 +293,10 @@ function createPath(node) {
 
 function isOverlapped(target, rect) {
   return target.some((targetRect) =>
-    !(targetRect.right <= rect.left ||
-      targetRect.left >= rect.right ||
-      targetRect.bottom <= rect.top ||
-      targetRect.top >= rect.bottom)
+    targetRect.left < rect.right &&
+    targetRect.right > rect.left &&
+    targetRect.top < rect.bottom &&
+    targetRect.bottom > rect.top
   );
 }
 
@@ -373,8 +373,8 @@ function replaceNumber(numbers, rect, width, fontSize) {
   const newRect = structuredClone(rect);
   for (const positions of accessList) {
     for (const [x, y] of positions) {
-      const dx = width * x;
-      const dy = fontSize * y;
+      const dx = width * x / 2;
+      const dy = fontSize * y / 2;
       newRect.left = rect.left + dx;
       newRect.right = rect.right + dx;
       newRect.top = rect.top + dy;
@@ -389,33 +389,33 @@ function getSegmentRects(pathData, index, r) {
   const rects = [];
   const margin = 1;
 
-  function getRect(x, y, r) {
-    const w = (index.toString().length / 2 + margin) * r;
+  function getRect(x, y, r, n) {
+    const w = (n.toString().length / 2 + margin) * r;
     const w2 = w / 2;
-    const rect = { left: x - w2, top: y - r, right: x + w2, bottom: y + r };
+    const rect = { left: x - w2, top: y, right: x + w2, bottom: y + r };
     const newRect = replaceNumber(rects, rect, w, r);
     return newRect;
   }
 
   let x = 0;
   let y = 0;
-  pathData.segments.forEach((segment) => {
+  pathData.segments.forEach((segment, i) => {
     switch (segment[0]) {
       case "H":
         x = segment[1];
-        rects.push(getRect(x, y, r));
+        rects.push(getRect(x, y, r, index + i));
         break;
       case "h":
         x += segment[1];
-        rects.push(getRect(x, y, r));
+        rects.push(getRect(x, y, r, index + i));
         break;
       case "V":
         y = segment[1];
-        rects.push(getRect(x, y, r));
+        rects.push(getRect(x, y, r, index + i));
         break;
       case "v":
         y += segment[1];
-        rects.push(getRect(x, y, r));
+        rects.push(getRect(x, y, r, index + i));
         break;
       case "M":
       case "L":
@@ -426,7 +426,7 @@ function getSegmentRects(pathData, index, r) {
       case "A":
         x = segment.at(-2);
         y = segment.at(-1);
-        rects.push(getRect(x, y, r));
+        rects.push(getRect(x, y, r, index + i));
         break;
       case "m":
       case "l":
@@ -437,7 +437,7 @@ function getSegmentRects(pathData, index, r) {
       case "a":
         x += segment.at(-2);
         y += segment.at(-1);
-        rects.push(getRect(x, y, r));
+        rects.push(getRect(x, y, r, index + i));
         break;
       case "Z":
       case "z":
@@ -448,7 +448,7 @@ function getSegmentRects(pathData, index, r) {
 }
 
 function addNumbers(r) {
-  let index = clickIndex + 1;
+  let index = 1;
   problem.forEach((data, pathIndex) => {
     const pathData = svgpath(data.path.getAttribute("d"));
     const rects = getSegmentRects(pathData, index, r);
