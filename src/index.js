@@ -369,6 +369,58 @@ function getAccessList(n) {
   return list;
 }
 
+function getPoints(pathData) {
+  const points = [];
+  let x = 0;
+  let y = 0;
+  pathData.segments.forEach((segment) => {
+    switch (segment[0]) {
+      case "H":
+        x = segment[1];
+        points.push([x, y]);
+        break;
+      case "h":
+        x += segment[1];
+        points.push([x, y]);
+        break;
+      case "V":
+        y = segment[1];
+        points.push([x, y]);
+        break;
+      case "v":
+        y += segment[1];
+        points.push([x, y]);
+        break;
+      case "M":
+      case "L":
+      case "C":
+      case "S":
+      case "Q":
+      case "T":
+      case "A":
+        x = segment.at(-2);
+        y = segment.at(-1);
+        points.push([x, y]);
+        break;
+      case "m":
+      case "l":
+      case "c":
+      case "s":
+      case "q":
+      case "t":
+      case "a":
+        x += segment.at(-2);
+        y += segment.at(-1);
+        points.push([x, y]);
+        break;
+      case "Z":
+      case "z":
+        break;
+    }
+  });
+  return points;
+}
+
 function replaceNumber(numbers, rect, width, fontSize) {
   const newRect = structuredClone(rect);
   for (const positions of accessList) {
@@ -385,64 +437,17 @@ function replaceNumber(numbers, rect, width, fontSize) {
   return newRect;
 }
 
-function getSegmentRects(pathData, index, r) {
+function getRects(points, index, r) {
   const rects = [];
   const margin = 1;
 
-  function getRect(x, y, r, n) {
+  points.forEach(([x, y], i) => {
+    const n = index + i;
     const w = (n.toString().length / 2 + margin) * r;
     const w2 = w / 2;
     const rect = { left: x - w2, top: y, right: x + w2, bottom: y + r };
     const newRect = replaceNumber(rects, rect, w, r);
-    return newRect;
-  }
-
-  let x = 0;
-  let y = 0;
-  pathData.segments.forEach((segment, i) => {
-    switch (segment[0]) {
-      case "H":
-        x = segment[1];
-        rects.push(getRect(x, y, r, index + i));
-        break;
-      case "h":
-        x += segment[1];
-        rects.push(getRect(x, y, r, index + i));
-        break;
-      case "V":
-        y = segment[1];
-        rects.push(getRect(x, y, r, index + i));
-        break;
-      case "v":
-        y += segment[1];
-        rects.push(getRect(x, y, r, index + i));
-        break;
-      case "M":
-      case "L":
-      case "C":
-      case "S":
-      case "Q":
-      case "T":
-      case "A":
-        x = segment.at(-2);
-        y = segment.at(-1);
-        rects.push(getRect(x, y, r, index + i));
-        break;
-      case "m":
-      case "l":
-      case "c":
-      case "s":
-      case "q":
-      case "t":
-      case "a":
-        x += segment.at(-2);
-        y += segment.at(-1);
-        rects.push(getRect(x, y, r, index + i));
-        break;
-      case "Z":
-      case "z":
-        break;
-    }
+    rects.push(newRect);
   });
   return rects;
 }
@@ -451,7 +456,8 @@ function addNumbers(r) {
   let index = 1;
   problem.forEach((data, pathIndex) => {
     const pathData = svgpath(data.path.getAttribute("d"));
-    const rects = getSegmentRects(pathData, index, r);
+    const points = getPoints(pathData);
+    const rects = getRects(points, index, r);
 
     const texts = [];
     const display = (pathIndex == 0) ? "initial" : "none";
