@@ -300,6 +300,52 @@ function isOverlapped(target, rect) {
   );
 }
 
+function handleTextClick(text, pathIndex, value) {
+  if (clickIndex + 1 != value) {
+    playAudio("error");
+    return;
+  }
+  clickIndex += 1;
+  const currPath = problem[pathIndex].path;
+  if (textIndex != 0) currPath.nextElementSibling.remove();
+  text.style.cursor = "initial";
+  text.setAttribute("fill-opacity", 0.5);
+  text.onclick = null;
+
+  const path = createPath(problem[pathIndex].path);
+  resetCurrentColor(path);
+  path.style.fill = "";
+  path.style.stroke = "";
+  const pathData = svgpath.from(problem[pathIndex].pathData);
+
+  if (textIndex + 1 == problem[pathIndex].texts.length) {
+    path.setAttribute("d", pathData.toString());
+    currPath.after(path);
+
+    problem[pathIndex].texts.forEach((prevText) => {
+      prevText.remove();
+    });
+    if (pathIndex + 1 == problem.length) {
+      playAudio("correctAll");
+    } else {
+      playAudio("correct2");
+      currPathIndex += 1;
+      textIndex = 0;
+      problem[currPathIndex].texts.forEach((currText) => {
+        currText.style.display = "initial";
+      });
+    }
+  } else {
+    const segmentIndex = problem[pathIndex].rects[textIndex].i;
+    pathData.segments = pathData.segments.slice(0, segmentIndex + 1);
+    path.setAttribute("d", pathData.toString());
+    currPath.after(path);
+
+    playAudio("correct1");
+    textIndex += 1;
+  }
+}
+
 function addNumber(x, y, r, i, pathIndex, display) {
   const text = document.createElementNS(svgNamespace, "text");
   text.setAttribute("x", x);
@@ -309,47 +355,7 @@ function addNumber(x, y, r, i, pathIndex, display) {
   text.style.display = display;
   text.style.cursor = "pointer";
   text.textContent = i;
-  text.onclick = () => {
-    if (clickIndex + 1 != i) {
-      playAudio("error");
-      return;
-    }
-    clickIndex += 1;
-    const currPath = problem[pathIndex].path;
-    if (segmentIndex != 1) currPath.nextElementSibling.remove();
-    text.style.cursor = "initial";
-    text.setAttribute("fill-opacity", 0.5);
-    text.onclick = null;
-
-    const path = createPath(problem[pathIndex].path);
-    resetCurrentColor(path);
-    path.style.fill = "";
-    path.style.stroke = "";
-    const pathData = svgpath.from(problem[pathIndex].pathData);
-    pathData.segments = pathData.segments.slice(0, segmentIndex);
-    const d = pathData.toString();
-    path.setAttribute("d", d);
-    currPath.after(path);
-
-    if (segmentIndex == problem[pathIndex].pathData.segments.length) {
-      problem[pathIndex].texts.forEach((prevText) => {
-        prevText.remove();
-      });
-      if (pathIndex + 1 == problem.length) {
-        playAudio("correctAll");
-      } else {
-        playAudio("correct2");
-        currPathIndex += 1;
-        segmentIndex = 1;
-        problem[currPathIndex].texts.forEach((currText) => {
-          currText.style.display = "initial";
-        });
-      }
-    } else {
-      playAudio("correct1");
-      segmentIndex += 1;
-    }
-  };
+  text.onclick = () => handleTextClick(text, pathIndex, i);
   svg.appendChild(text);
   return text;
 }
@@ -440,14 +446,23 @@ function replaceNumber(numbers, rect, width, fontSize) {
 function getRects(points, index, r) {
   const rects = [];
   const margin = 1;
+  const viewBox = getViewBox(svg);
+  const threshold = viewBox[3] * 0.05;
 
+  let px = -Infinity;
+  let py = -Infinity;
   points.forEach(([x, y], i) => {
-    const n = index + i;
-    const w = (n.toString().length / 2 + margin) * r;
-    const w2 = w / 2;
-    const rect = { left: x - w2, top: y, right: x + w2, bottom: y + r };
-    const newRect = replaceNumber(rects, rect, w, r);
-    rects.push(newRect);
+    const distance = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+    if (threshold < distance) {
+      const n = index + i;
+      const w = (n.toString().length / 2 + margin) * r;
+      const w2 = w / 2;
+      const rect = { left: x - w2, top: y, right: x + w2, bottom: y + r, i };
+      const newRect = replaceNumber(rects, rect, w, r);
+      rects.push(newRect);
+      px = x;
+      py = y;
+    }
   });
   return rects;
 }
@@ -756,7 +771,7 @@ function styleAttributeToAttributes(svg) {
 
 async function nextProblem() {
   clickIndex = 0;
-  segmentIndex = 1;
+  textIndex = 0;
   currPathIndex = 0;
   const courseNode = document.getElementById("course");
   const course = courseNode.options[courseNode.selectedIndex].value;
@@ -818,7 +833,7 @@ const svgNamespace = "http://www.w3.org/2000/svg";
 const xlinkNamespace = "http://www.w3.org/1999/xlink";
 const accessList = getAccessList(5);
 let clickIndex = 0;
-let segmentIndex = 1;
+let textIndex = 0;
 let currPathIndex = 0;
 let svg;
 let problem;
