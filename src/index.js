@@ -443,17 +443,15 @@ function replaceNumber(numbers, rect, width, fontSize) {
   return newRect;
 }
 
-function getRects(points, index, r) {
+function getRects(points, index, r, skipThreshold) {
   const rects = [];
   const margin = 1;
-  const viewBox = getViewBox(svg);
-  const threshold = viewBox[3] * skipFactor;
 
   let px = -Infinity;
   let py = -Infinity;
   points.forEach(([x, y], i) => {
     const distance = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
-    if (threshold < distance) {
+    if (skipThreshold < distance) {
       const n = index + i;
       const w = (n.toString().length / 2 + margin) * r;
       const w2 = w / 2;
@@ -468,11 +466,13 @@ function getRects(points, index, r) {
 }
 
 function addNumbers(r) {
+  const viewBox = getViewBox(svg);
+  const skipThreshold = viewBox[3] * skipFactor;
   let index = 1;
   problem.forEach((data, pathIndex) => {
     const pathData = svgpath(data.path.getAttribute("d"));
     const points = getPoints(pathData);
-    const rects = getRects(points, index, r);
+    const rects = getRects(points, index, r, skipThreshold);
 
     const texts = [];
     const display = (pathIndex == 0) ? "initial" : "none";
