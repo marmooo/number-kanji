@@ -130,6 +130,7 @@ function addNumber(x, y, r, i, pathIndex, display) {
   text.setAttribute("y", y);
   text.setAttribute("text-anchor", "middle");
   text.setAttribute("font-size", r);
+  text.setAttribute("fill", "currentColor");
   text.style.display = display;
   text.style.cursor = "pointer";
   text.textContent = i;
