@@ -388,6 +388,7 @@
 2f28.svg
 2f29.svg
 2f2b.svg
+2f2c.svg
 2f2d.svg
 2f2e.svg
 2f2f.svg
@@ -2571,6 +2572,7 @@
 5c1a.svg
 5c1e.svg
 5c20.svg
+5c22.svg
 5c24.svg
 5c28.svg
 5c29.svg
@@ -10188,6 +10190,7 @@ fa45.svg
 fa46.svg
 fa47.svg
 fa48.svg
+fa49.svg
 fa4a.svg
 fa4b.svg
 fa4c.svg
