@@ -3,18 +3,18 @@
   "short_name": "漢字点つなぎ",
   "icons": [
     {
-      "src": "/number-icon/favicon/android-chrome-192x192.png",
+      "src": "/number-kanji/favicon/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/number-icon/favicon/android-chrome-512x512.png",
+      "src": "/number-kanji/favicon/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
-  "start_url": "https://marmooo.github.io/number-icon/ja/",
+  "start_url": "https://marmooo.github.io/number-kanji/ja/",
   "display": "standalone"
 }
