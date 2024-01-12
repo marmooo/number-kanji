@@ -124,12 +124,12 @@ function handleTextClick(text, pathIndex, value) {
   }
 }
 
-function addNumber(x, y, r, i, pathIndex, display) {
+function addNumber(x, y, fontSize, i, pathIndex, display) {
   const text = document.createElementNS(svgNamespace, "text");
   text.setAttribute("x", x);
-  text.setAttribute("y", y);
+  text.setAttribute("y", y + fontSize);
   text.setAttribute("text-anchor", "middle");
-  text.setAttribute("font-size", r);
+  text.setAttribute("font-size", fontSize);
   text.setAttribute("fill", "currentColor");
   text.style.display = display;
   text.style.cursor = "pointer";
@@ -227,7 +227,7 @@ function replaceNumber(numbers, rect, width, fontSize) {
   return newRect;
 }
 
-function getRects(points, index, r, skipThreshold) {
+function getRects(points, index, fontSize, skipThreshold) {
   const rects = [];
   const margin = 1;
 
@@ -237,10 +237,10 @@ function getRects(points, index, r, skipThreshold) {
     const distance = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
     if (skipThreshold < distance) {
       const n = index + i;
-      const w = (n.toString().length / 2 + margin) * r;
+      const w = (n.toString().length / 2 + margin) * fontSize;
       const w2 = w / 2;
-      const rect = { left: x - w2, top: y, right: x + w2, bottom: y + r, i };
-      const newRect = replaceNumber(rects, rect, w, r);
+      const rect = { left: x - w2, top: y, right: x + w2, bottom: y + fontSize, i };
+      const newRect = replaceNumber(rects, rect, w, fontSize);
       rects.push(newRect);
       px = x;
       py = y;
@@ -249,20 +249,20 @@ function getRects(points, index, r, skipThreshold) {
   return rects;
 }
 
-function addNumbers(r) {
+function addNumbers(fontSize) {
   const viewBox = getViewBox(svg);
   const skipThreshold = viewBox[3] * skipFactor;
   let index = 1;
   problem.forEach((data, pathIndex) => {
     const pathData = svgpath(data.path.getAttribute("d"));
     const points = getPoints(pathData);
-    const rects = getRects(points, index, r, skipThreshold);
+    const rects = getRects(points, index, fontSize, skipThreshold);
 
     const texts = [];
     const display = (pathIndex == 0) ? "initial" : "none";
     rects.forEach((rect) => {
       const left = rect.left + (rect.right - rect.left) / 2;
-      const text = addNumber(left, rect.top + r, r, index, pathIndex, display);
+      const text = addNumber(left, rect.top, fontSize, index, pathIndex, display);
       texts.push(text);
       index += 1;
     });
@@ -576,8 +576,7 @@ async function nextProblem() {
     problem.push({ path });
   });
   hideIcon(svg);
-  fontSize = getFontSize(svg);
-  addNumbers(fontSize);
+  addNumbers(getFontSize(svg));
   setViewBox(svg);
 
   svg.style.width = "100%";
@@ -618,7 +617,6 @@ let textIndex = 0;
 let currPathIndex = 0;
 let svg;
 let problem;
-let fontSize;
 let iconList = [];
 
 selectRandomCourse();
