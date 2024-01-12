@@ -239,7 +239,13 @@ function getRects(points, index, fontSize, skipThreshold) {
       const n = index + i;
       const w = (n.toString().length / 2 + margin) * fontSize;
       const w2 = w / 2;
-      const rect = { left: x - w2, top: y, right: x + w2, bottom: y + fontSize, i };
+      const rect = {
+        left: x - w2,
+        top: y,
+        right: x + w2,
+        bottom: y + fontSize,
+        i,
+      };
       const newRect = replaceNumber(rects, rect, w, fontSize);
       rects.push(newRect);
       px = x;
@@ -262,7 +268,14 @@ function addNumbers(fontSize) {
     const display = (pathIndex == 0) ? "initial" : "none";
     rects.forEach((rect) => {
       const left = rect.left + (rect.right - rect.left) / 2;
-      const text = addNumber(left, rect.top, fontSize, index, pathIndex, display);
+      const text = addNumber(
+        left,
+        rect.top,
+        fontSize,
+        index,
+        pathIndex,
+        display,
+      );
       texts.push(text);
       index += 1;
     });
