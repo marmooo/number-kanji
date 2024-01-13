@@ -204,7 +204,7 @@ function getPoints(pathData) {
         x = points[n][0];
         y = points[n][1];
         points.push([x, y]);
-        n = i;
+        n = i + 1;
         break;
     }
   });
