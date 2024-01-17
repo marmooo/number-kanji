@@ -36,7 +36,7 @@ function notoSerifJP(chars) {
   parseTTF(
     chars,
     "vendor/NotoSerifJP-Regular.otf",
-    "docs/svg/noto-serif-jp",
+    "svg/noto-serif-jp",
     options,
   );
 }
@@ -47,7 +47,7 @@ function notoSansJP(chars) {
   parseTTF(
     chars,
     "vendor/NotoSansJP-Regular.otf",
-    "docs/svg/noto-sans-jp",
+    "svg/noto-sans-jp",
     options,
   );
 }
