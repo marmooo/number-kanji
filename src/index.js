@@ -527,18 +527,6 @@ function removeSvgTagAttributes(svg) {
   }
 }
 
-function fixIconCode(svg) {
-  const course = courseNode.options[courseNode.selectedIndex].value;
-  if (course == "Solar-icon-set") {
-    for (const node of svg.querySelectorAll("[fill=black]")) {
-      node.setAttribute("fill", "gray");
-    }
-    for (const node of svg.querySelectorAll("[stroke=black]")) {
-      node.setAttribute("stroke", "gray");
-    }
-  }
-}
-
 function computeAttribute(node, attributeName) {
   let attributeValue;
   while (!attributeValue && node && node.tagName) {
@@ -585,7 +573,6 @@ async function nextProblem() {
   const icon = await fetchIcon(url);
   svg = icon.documentElement;
 
-  fixIconCode(svg);
   styleAttributeToAttributes(svg);
   if (!svg.getAttribute("fill")) svg.setAttribute("fill", "gray");
   resetCurrentColor(svg);
