@@ -1,5 +1,4 @@
-import { parse } from "npm:opentype.js@1.3.4";
-import { filterGlyphs, toSVG } from "npm:@marmooo/ttf2svg@0.1.6";
+import { filterGlyphs, parse, toSVG } from "npm:@marmooo/ttf2svg@0.1.7";
 import { JISCode } from "npm:@marmooo/kanji@0.0.8";
 
 function loadKanjiList() {
