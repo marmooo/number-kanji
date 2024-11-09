@@ -1,4 +1,4 @@
-import { filterGlyphs, parse, toSVG } from "npm:@marmooo/ttf2svg@0.2.1";
+import { filterGlyphs, parse, toSVG } from "npm:@marmooo/ttf2svg@0.2.2";
 import { JISCode } from "npm:@marmooo/kanji@0.0.8";
 
 function loadKanjiList() {
