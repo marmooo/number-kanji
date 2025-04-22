@@ -1,5 +1,5 @@
-import { filterGlyphs, parse, toSVG } from "npm:@marmooo/ttf2svg@0.2.2";
-import { JISCode } from "npm:@marmooo/kanji@0.0.8";
+import { filterGlyphs, parse, toSVG } from "@marmooo/ttf2svg";
+import { JISCode } from "marmooo/kanji";
 
 function loadKanjiList() {
   let chars =
