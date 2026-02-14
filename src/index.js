@@ -178,7 +178,7 @@ function handleTextClick(text, pathIndex, value) {
     currPath.after(path);
 
     playAudio("correct1");
-    clickIndex += 1;
+    textIndex += 1;
     if (textIndex % 10 === 0) {
       const particleCount = Math.min(
         Math.floor(clickIndex / 10),
