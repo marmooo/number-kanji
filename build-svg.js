@@ -1,5 +1,5 @@
 import { filterGlyphs, parse, toSVG } from "@marmooo/ttf2svg";
-import { JISCode } from "marmooo/kanji";
+import { JISCode } from "@marmooo/kanji";
 
 function loadKanjiList() {
   let chars =
@@ -32,7 +32,7 @@ function parseTTF(inFile, outDir, options = {}) {
 
 function notoSerifJP(text) {
   console.log("Noto Serif JP");
-  const options = { text, glyphHeight: 1000, translateY: 850 };
+  const options = { text };
   parseTTF(
     "vendor/NotoSerifJP-Regular.otf",
     "svg/noto-serif-jp",
@@ -42,7 +42,7 @@ function notoSerifJP(text) {
 
 function notoSansJP(text) {
   console.log("Noto Sans JP");
-  const options = { text, glyphHeight: 1000, translateY: 850 };
+  const options = { text };
   parseTTF(
     "vendor/NotoSansJP-Regular.otf",
     "svg/noto-sans-jp",
