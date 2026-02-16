@@ -5,8 +5,8 @@
 ## Installation
 
 1. `bash install-fonts.sh`
-2. `deno --allow-read --allow-write build-svg.js`
-3. `deno run --allow-read --allow-write listup.js`
+2. `deno -RWE build-svg.js`
+3. `deno run -RW listup.js`
 
 ## Build
 
