@@ -3,6 +3,6 @@
     "@deno/emit": "jsr:@deno/emit@^0.46.0",
     "@marmooo/kanji": "npm:@marmooo/kanji@^0.1.1",
     "@marmooo/ttf2svg": "npm:@marmooo/ttf2svg@^0.2.5",
-    "@std/fs": "jsr:@std/fs@^1.0.18"
+    "@std/fs": "jsr:@std/fs@^1.0.22"
   }
 }
