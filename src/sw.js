@@ -1,4 +1,4 @@
-const cacheName = "2026-02-14 00:00";
+const cacheName = "2026-04-08 00:00";
 const urlsToCache = [
   "/number-kanji/index.js",
   "/number-kanji/mp3/boyon1.mp3",
